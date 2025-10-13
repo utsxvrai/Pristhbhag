@@ -1,0 +1,17 @@
+node_modules/
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+
+.DS_Store
+# Ignore log files and temp files
+*.log
+*.tmp
+# Ignore build output
+/dist
+/build
+# Ignore OS-specific files
+Thumbs.db
+
+
