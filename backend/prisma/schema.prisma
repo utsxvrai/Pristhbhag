@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -14,6 +13,19 @@ model User {
   email     String   @unique
   password  String
   name      String?
+  blogs     Blog[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Blog {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  author_id Int
+  author    User     @relation(fields: [author_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([author_id])
 }

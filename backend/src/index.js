@@ -2,6 +2,7 @@ const express = require('express');
 const routes = require('./routes');
 const pool = require('./config/db');
 const cors = require('cors');
+const {GrpcService} = require('./services');
 require('dotenv').config();
 
 // Create an Express application
@@ -26,6 +27,9 @@ pool.connect()
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
+
+// Start the gRPC server
+GrpcService.startGrpcServer();
 
 
 
