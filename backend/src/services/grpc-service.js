@@ -17,11 +17,11 @@ function startGrpcServer() {
         oneofs: true,
     });
     const proto = grpc.loadPackageDefinition(packageDefinition).blog;
-
+// HERE I AM MAPPING THE SERVICE METHODS TO THE GRPC IMPLEMENTATIONS 
     const handlers = {
         CreateBlog: blogService.CreateBlog,
-        GetPosts: blogService.GetBlogs,
-        GetPost: blogService.GetBlogById,
+        GetBlogs: blogService.GetBlogs,
+        GetBlogById: blogService.GetBlogById,
         UpdateBlog: blogService.UpdateBlog,
         DeleteBlog: blogService.DeleteBlog,
     };

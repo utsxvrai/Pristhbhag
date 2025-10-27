@@ -2,18 +2,47 @@ syntax = "proto3";
 
 package blog;
 
+// =====================
+// Service Definition
+// =====================
 service BlogService {
   rpc CreateBlog (BlogRequest) returns (BlogResponse);
   rpc GetBlogs (Empty) returns (BlogList);
+  rpc GetBlogById (BlogRequestById) returns (BlogItem);
+  rpc UpdateBlog (UpdateBlogRequest) returns (BlogResponse);
+  rpc DeleteBlog (BlogRequestById) returns (BlogResponse);
 }
 
+// =====================
+// Message Definitions
+// =====================
+
+// For empty input (used in GetBlogs)
 message Empty {}
 
+// ---------- CREATE ----------
 message BlogRequest {
   string title = 1;
   string content = 2;
+  string author_id = 3;
 }
 
+// ---------- READ ----------
+message BlogRequestById {
+  string id = 1;
+}
+
+// ---------- UPDATE ----------
+message UpdateBlogRequest {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+// ---------- DELETE ----------
+// Delete will reuse BlogRequestById
+
+// ---------- RESPONSES ----------
 message BlogResponse {
   string message = 1;
 }
@@ -22,7 +51,7 @@ message BlogItem {
   string id = 1;
   string title = 2;
   string content = 3;
-  string authorId = 4;
+  string author_id = 4;
 }
 
 message BlogList {
