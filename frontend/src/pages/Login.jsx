@@ -23,6 +23,7 @@ export default function Login({ onLogin }) {
         // Store token in localStorage (optional)
         console.log(data.token);
         localStorage.setItem("token", data.token);
+        if (data.user && data.user.id) localStorage.setItem('userId', data.user.id);
         onLogin();
         navigate("/");
       } else {

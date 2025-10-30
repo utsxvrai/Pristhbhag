@@ -33,7 +33,7 @@ message BlogRequestById {
 }
 
 // ---------- UPDATE ----------
-message UpdateBlogRequest {
+message UpdateBlogRequest { 
   string id = 1;
   string title = 2;
   string content = 3;

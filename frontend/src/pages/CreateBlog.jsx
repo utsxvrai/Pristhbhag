@@ -8,11 +8,29 @@ export default function CreateBlog() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // For demo, save to localStorage
-    const blogs = JSON.parse(localStorage.getItem("blogs") || "[]");
-    blogs.push({ title, content });
-    localStorage.setItem("blogs", JSON.stringify(blogs));
-    navigate("/");
+    // Call backend to create blog
+    (async () => {
+      try {
+  const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:3000/api/v1/blog/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+          body: JSON.stringify({ title, content }),
+        });
+        if (res.ok) {
+          navigate('/');
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to create blog');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error');
+      }
+    })();
   };
 
   return (

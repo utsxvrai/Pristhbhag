@@ -5,8 +5,8 @@ import BlogList from "./pages/BlogList";
 import CreateBlog from "./pages/CreateBlog";
 
 function App() {
-  // Simple auth state for demo
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  // Simple auth state for demo (persisted)
+  const [isLoggedIn, setIsLoggedIn] = React.useState(() => !!localStorage.getItem('token'));
 
   return (
     <Router>
