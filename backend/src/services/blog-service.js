@@ -1,8 +1,11 @@
-const { BlogRepository } = require("../repositories");
+const { BlogRepository, CachedBlogRepository } = require("../repositories");
 const jwt = require("jsonwebtoken");
+const { Redis } = require("ioredis");
 
+const redisClient = new Redis();
 
-const blogRepo = new BlogRepository();
+const realBlogRepo = new BlogRepository();
+const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
 
     async function CreateBlog(call, callback) {
     try {

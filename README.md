@@ -47,3 +47,23 @@ src/
  └── routes/
       └── blog-routes.js
 ```
+
+## Day 3 :
+- Redis (Remote Dictionary Server) is a fast, open-source, in-memory key-value data store used as a database, cache, and message broker. We're using it to cache database requests.
+
+### What I Learned :
+- How to use Redis to dramatically speed up read-heavy operations like GetBlogById and GetBlogs.
+- Implemented the "cache-aside" pattern.
+- How to run Redis locally in a container using Docker:
+``` docker run -d --name my-redis-container -p 6379:6379 redis ```
+-Used the ioredis client in Node.js to connect to the Redis server.
+
+- Implemented caching at the Repository Layer using the Decorator Pattern. This keeps my Service Layer and Controllers clean, as they are unaware that caching is even happening.
+- Handled cache invalidation:
+    - UpdateBlog & DeleteBlog: Delete the specific blog:id key and the general blogs:all key.
+
+    - CreateBlog: Delete the blogs:all key to ensure the list is refetched.
+
+### Resource 
+
+- Notion Notes - Caching with Redis: https://www.notion.so/Caching-29c3c5598b618012995ece6b2bc7a22d
