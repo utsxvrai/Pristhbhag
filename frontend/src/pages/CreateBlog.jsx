@@ -12,7 +12,7 @@ export default function CreateBlog() {
     (async () => {
       try {
   const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3000/api/v1/blog/create`, {
+        const res = await fetch(`/api/v1/blog/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

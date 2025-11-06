@@ -2,7 +2,10 @@ const { BlogRepository, CachedBlogRepository } = require("../repositories");
 const jwt = require("jsonwebtoken");
 const { Redis } = require("ioredis");
 
-const redisClient = new Redis();
+const redisClient = new Redis({
+    host: process.env.REDIS_HOST || "localhost",
+    port: process.env.REDIS_PORT || 6379,
+});
 
 const realBlogRepo = new BlogRepository();
 const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);

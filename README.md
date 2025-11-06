@@ -67,3 +67,53 @@ src/
 ### Resource 
 
 - Notion Notes - Caching with Redis: https://www.notion.so/Caching-29c3c5598b618012995ece6b2bc7a22d
+
+
+## Day 4 :
+
+- Nginx is a high-performance web server and reverse proxy used for serving static files, load balancing, and acting as a gateway between clients and backend services.
+
+### What I Learned :
+
+- How to set up Nginx as a reverse proxy for backend APIs.
+
+- Configured upstream servers for load balancing multiple backend instances.
+
+- Learned about:
+
+    - proxy_pass for routing requests to backend services.
+
+    - proxy_set_header for forwarding client headers.
+
+- Handling WebSocket connections with Upgrade and Connection headers.
+
+- Used Nginx to serve a React frontend and route API calls to Node.js backend on the same domain.
+
+- Learned how to modify the Nginx configuration and reload it using:
+
+### Example nginx.conf snippet:
+
+``` http {
+  upstream backend_cluster {
+    server backend1:8000;
+    server backend2:8000;
+  }
+
+  server {
+    listen 80;
+
+    location / {
+      root /usr/share/nginx/html;
+      index index.html;
+      try_files $uri /index.html;
+    }
+
+    location /api/ {
+      proxy_pass http://backend_cluster;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Host $host;
+    }
+  }
+} ```

@@ -9,7 +9,7 @@ export default function BlogList() {
     let mounted = true;
     (async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/v1/blog');
+        const res = await fetch('/api/v1/blog');
         if (!mounted) return;
         if (res.ok) {
           const data = await res.json();
