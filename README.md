@@ -93,7 +93,8 @@ src/
 
 ### Example nginx.conf snippet:
 
-``` http {
+``` 
+http {
   upstream backend_cluster {
     server backend1:8000;
     server backend2:8000;
@@ -116,7 +117,8 @@ src/
       proxy_set_header Host $host;
     }
   }
-} ```
+}
+```
 
 ## Day 5 : More About Databases
 
