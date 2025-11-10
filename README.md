@@ -117,3 +117,32 @@ src/
     }
   }
 } ```
+
+## Day 5 : More About Databases
+
+### Transactions 
+A transaction in databases is a single logical unit of work that may consist of one or more SQL operations (like INSERT, UPDATE, or DELETE) that are executed together.
+
+### ACID :
+
+Popular relational databases like MySQL avoid these kinds of data integrity issues by following a few core principles that govern how transactions work. They conform to a transactional standard called ACID. ACID is an acronym for four different words, but it really breaks down into two core principles: completeness and concurrency. First, here’s what ACID stands for:
+
+- **Atomicity**: the “all or nothing” rule — the transaction either happens completely or doesn’t happen at all
+- **Consistency**: data is consistent before and after a transaction without any missing steps
+- **Isolation**: multiple transactions can happen concurrently without reading the wrong data
+- **Durability**: transactional success is robust to system failure
+
+## **Normalization :**
+
+Normalization is the process of structuring a database to reduce redundancy and improve consistency.In simple terms, it breaks large messy tables into smaller, well-organized ones. This ensures data is stored logically, making databases efficient, easy to maintain, and free from duplication or errors.
+
+https://www.guru99.com/database-normalization.html
+
+# **What are the Types of Normal Forms in DBMS?**
+
+Here is a list of Normal Forms in SQL:
+
+- **1NF (First Normal Form):** Ensures that the database table is organized such that each column contains atomic (indivisible) values, and each record is unique. This eliminates repeating groups, thereby structuring data into tables and columns.
+- **2NF (Second Normal Form):** Builds on 1NF by We need to remove redundant data from a table that is being applied to multiple rows. and placing them in separate tables. It requires all non-key attributes to be fully functional on the primary key.
+- **3NF (Third Normal Form):** Extends 2NF by ensuring that all non-key attributes are not only fully functional on the primary key but also independent of each other. This eliminates transitive dependency.
+- **BCNF (Boyce-Codd Normal Form):** A refinement of 3NF that addresses anomalies not handled by 3NF. It requires every determinant to be a candidate key, ensuring even stricter adherence to normalization rules.
