@@ -28,12 +28,10 @@ export default function BlogList() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Blog List</h1>
-        <Link to="/create" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Create Blog
-        </Link>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-8">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-extrabold text-slate-800">Blog List</h1>
+        {/* Create button moved to navbar for global access */}
       </div>
       <div className="grid gap-6">
         {loading ? (
@@ -42,9 +40,10 @@ export default function BlogList() {
           <p className="text-gray-500">No blogs yet.</p>
         ) : (
           blogs.map((blog) => (
-            <div key={blog.id} className="bg-white p-6 rounded shadow">
-              <h2 className="text-xl font-bold mb-2">{blog.title}</h2>
-              <p>{blog.content}</p>
+            <div key={blog.id} className="bg-white p-6 rounded-xl shadow-md border border-slate-100 hover:shadow-lg transition">
+              <h2 className="text-xl font-semibold mb-2 text-slate-900">{blog.title}</h2>
+              <p className="text-slate-600">{blog.content}</p>
+              <div className="mt-4 text-sm text-slate-400">By Anonymous</div>
             </div>
           ))
         )}

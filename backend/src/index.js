@@ -4,6 +4,7 @@ const pool = require('./config/db');
 const cors = require('cors');
 const {GrpcService} = require('./services');
 require('dotenv').config();
+const { connectRedis } = require('./utils/redisClient');
 
 // Create an Express application
 const app = express();
@@ -27,6 +28,9 @@ app.listen(3000, () => {
 
 // Start the gRPC server
 GrpcService.startGrpcServer();
+
+// Connect to Redis (best-effort)
+connectRedis().then(() => console.log('Connected to Redis')).catch((err) => console.warn('Redis not available at startup', err.message || err));
 
 
 

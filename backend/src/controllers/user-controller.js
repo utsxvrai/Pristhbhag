@@ -1,5 +1,6 @@
 const {UserService} = require('../services');
 const {StatusCodes} = require('http-status-codes');
+const { revokeToken } = require('../utils/redisClient');
 
 
 
@@ -43,11 +44,26 @@ async function signIn(req, res) {
     }
 }
 
+async function signOut(req, res) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Authorization header missing' });
+        }
+        await revokeToken(authHeader);
+        res.status(StatusCodes.OK).json({ message: 'Signed out successfully' });
+    } catch (error) {
+        console.error('Error in signOut controller:', error);
+        res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+}
+
 
 
 module.exports = {
     createUser,
     getUserById,
     signIn,
+    signOut,
 
 };

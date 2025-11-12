@@ -34,28 +34,28 @@ export default function CreateBlog() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Create Blog</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-lg w-2/5 border border-slate-100">
+        <h2 className="text-2xl font-extrabold mb-6 text-center text-slate-800">Create a new blog post</h2>
         <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-3 mb-4 border rounded-md bg-slate-50"
           required
         />
         <textarea
           placeholder="Content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          rows={6}
+          className="w-full p-3 mb-4 border rounded-md bg-slate-50"
+          rows={8}
           required
         />
-        <button type="submit" className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">
-          Create
-        </button>
+        <div className="flex justify-end">
+          <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 font-medium">Publish</button>
+        </div>
       </form>
     </div>
   );

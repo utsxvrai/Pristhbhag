@@ -148,3 +148,73 @@ Here is a list of Normal Forms in SQL:
 - **2NF (Second Normal Form):** Builds on 1NF by We need to remove redundant data from a table that is being applied to multiple rows. and placing them in separate tables. It requires all non-key attributes to be fully functional on the primary key.
 - **3NF (Third Normal Form):** Extends 2NF by ensuring that all non-key attributes are not only fully functional on the primary key but also independent of each other. This eliminates transitive dependency.
 - **BCNF (Boyce-Codd Normal Form):** A refinement of 3NF that addresses anomalies not handled by 3NF. It requires every determinant to be a candidate key, ensuring even stricter adherence to normalization rules.
+## Day 6 : Testing
+
+# **What is Functional Testing?**
+
+**Functional Testing** is a type of software testing that validates the software system against the functional requirements/specifications. The purpose of Functional tests is to test each function of the software application, by providing appropriate input, verifying the output against the Functional requirements.
+
+# **What is Unit Testing?**
+
+Unit testing is a software testing method where **individual units or components of code**—such as functions, methods, or classes—are tested in isolation to verify they work correctly. The goal is to validate that the smallest pieces of an application behave as expected without dependencies on external systems.
+
+![image.png](attachment:74dc907d-ff1c-49b6-9f25-184e63b7c516:image.png)
+
+# **What is Integration Testing?**
+
+**Integration Testing** is defined as a type of testing where software modules are integrated logically and tested as a group. A typical software project consists of multiple software modules, coded by different programmers. The purpose of this level of testing is to expose defects in the interaction between these software modules when they are integrated
+
+Integration Testing focuses on checking data communication amongst these modules. Hence it is also termed as **‘I & T’** (Integration and Testing), **‘String Testing’** and sometimes **‘Thread Testing’**.
+
+### k6 (Load Testing Tool)
+
+### Concept
+
+k6 is a modern, developer-centric load testing tool written in Go with tests scripted in JavaScript. It helps you measure **system performance, scalability, and resilience** under load.
+
+### Installation
+
+```bash
+npm install -g k6
+```
+
+### Structure of a k6 Script
+
+Every test has three key parts:
+
+1. **Options** — how many users, how long to run.
+2. **Setup** — pre-test initialization.
+3. **Default Function** — the actual requests simulated.
+
+Example:
+
+```jsx
+import http from 'k6/http';
+import { sleep, check } from 'k6';
+
+export let options = {
+  vus: 100, // virtual users
+  duration: '1m', // test duration
+};
+
+export default function () {
+  let res = http.get('http://localhost:3000/api/v1/blogs');
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+  });
+  sleep(1);
+}
+```
+
+Run:
+
+```bash
+k6 run load-test.js
+```
+
+### Output
+
+- **HTTP Req/s:** Requests per second.
+- **Avg, p95 latency:** Average and 95th percentile response times.
+- **Error %:** Failed requests.
+- **Throughput:** Total data handled by the backend.

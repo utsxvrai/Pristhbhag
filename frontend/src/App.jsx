@@ -1,21 +1,34 @@
-import React from "react";
+import React, { useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import BlogList from "./pages/BlogList";
 import CreateBlog from "./pages/CreateBlog";
+import Signup from "./pages/Signup";
+import Navbar from "./components/Navbar";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 
-function App() {
-  // Simple auth state for demo (persisted)
-  const [isLoggedIn, setIsLoggedIn] = React.useState(() => !!localStorage.getItem('token'));
-
+function AppRoutes() {
+  const { isLoggedIn } = useContext(AuthContext);
   return (
-    <Router>
+    <>
+      <Navbar />
       <Routes>
-        <Route path="/login" element={<Login onLogin={() => setIsLoggedIn(true)} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/create" element={isLoggedIn ? <CreateBlog /> : <Navigate to="/login" />} />
         <Route path="/" element={isLoggedIn ? <BlogList /> : <Navigate to="/login" />} />
       </Routes>
-    </Router>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   );
 }
 
