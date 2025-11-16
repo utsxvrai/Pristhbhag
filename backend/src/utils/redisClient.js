@@ -14,7 +14,6 @@ async function connectRedis() {
   }
 }
 
-// revoke a token by storing it in Redis with TTL up to token expiry
 async function revokeToken(token) {
   try {
     if (!token) return false;

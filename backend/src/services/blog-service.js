@@ -1,6 +1,8 @@
 const { BlogRepository, CachedBlogRepository } = require("../repositories");
 const jwt = require("jsonwebtoken");
 const { Redis } = require("ioredis");
+const rabbit = require("../utils/rabbitmq");
+const { create } = require("./user-service");
 
 const redisClient = new Redis({
     host: process.env.REDIS_HOST || "localhost",
@@ -10,7 +12,7 @@ const redisClient = new Redis({
 const realBlogRepo = new BlogRepository();
 const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
 
-    async function CreateBlog(call, callback) {
+async function CreateBlog(call, callback) {
     try {
         const authHeader = call.metadata.get("authorization")[0];
         if (!authHeader) {
@@ -31,6 +33,16 @@ const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
             author_id: decoded.id,
         });
 
+        // Publish event to RabbitMQ
+        await rabbit.publishEvent('blog-events', 'blog.created', {
+            blogId: newBlog.id,
+            title: newBlog.title,
+            authorId: newBlog.author_id,
+            createdAt : Date.now()
+        });
+
+
+
         callback(null, {
             message: `Blog created successfully with ID: ${newBlog.id}`,
         });
@@ -40,10 +52,10 @@ const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
             code: 13, // INTERNAL
                 message: error.message,
             });
-        }
     }
+}
   // Fetch all blogs
-  async function GetBlogs(call, callback) {
+async function GetBlogs(call, callback) {
     try {
         const blogs = await blogRepo.findAll();
 
@@ -62,11 +74,11 @@ const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
             code: 13,
             message: error.message,
         });
-        }
     }
+}
 
   // Fetch single blog by ID
-    async function GetBlogById(call, callback) {
+async function GetBlogById(call, callback) {
         try {
         const { id } = call.request;
         const blog = await blogRepo.findById(id);
@@ -90,11 +102,11 @@ const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
             code: 13,
             message: error.message,
         });
-        }
     }
+}
 
   // Update blog
-    async function UpdateBlog(call, callback) {
+async function UpdateBlog(call, callback) {
         try {
         const authHeader = call.metadata.get("authorization")[0];
         const token = authHeader?.split(" ")[1];
@@ -120,10 +132,10 @@ const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
             message: error.message,
         });
         }
-    }
+}
 
   // Delete blog
-    async function DeleteBlog(call, callback) {
+async function DeleteBlog(call, callback) {
         try {
             const authHeader = call.metadata.get("authorization")[0];
             const token = authHeader?.split(" ")[1];
@@ -149,7 +161,7 @@ const blogRepo = new CachedBlogRepository(realBlogRepo, redisClient);
                 message: error.message,
         });
         }
-    }
+}
 
 
 module.exports = {

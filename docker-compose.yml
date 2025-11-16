@@ -136,6 +136,54 @@ services:
       - web
 
 # ======================
+# 📦 RabbitMQ
+# ======================
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - web
+
+# ======================
+# 📦 Workers
+# ======================
+
+  email-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: email-worker
+    restart: always
+    env_file:
+      - ./backend/.env
+    command: node workers/email-worker/index.js
+    depends_on:
+      - rabbitmq
+    networks:
+      - web
+  
+  notification-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: notification-worker
+    restart: always
+    env_file:
+      - ./backend/.env
+    command: node workers/notification-worker/index.js
+    depends_on:
+      - rabbitmq
+    networks:
+      - web
+
+# ======================
 # 📦 Persistent Volumes
 # ======================
 volumes:
@@ -145,6 +193,7 @@ volumes:
     name: pgadmin_data
   redis_data:
     name: redis_data
+
 
 # ======================
 # 🌐 Shared Network
