@@ -218,3 +218,33 @@ k6 run load-test.js
 - **Avg, p95 latency:** Average and 95th percentile response times.
 - **Error %:** Failed requests.
 - **Throughput:** Total data handled by the backend.
+
+## Day 7 : RabbitMQ
+### **RabbitMQ analogy: a task counter in a kitchen.**
+
+Orders come in. The waiter writes each order and drops it at the counter. Chefs pick orders one by one. If too many orders arrive, the counter stacks them. If a chef steps away, orders wait. If a chef burns a dish, the order goes back on the counter. When more chefs arrive, the stack is drained faster.
+
+This matches real-world problems:
+
+1. Sending emails after a user signs up.
+2. Generating thumbnails after image upload.
+3. Running payment confirmations.
+4. Cleaning up expired sessions.
+5. Processing background jobs.
+
+The producer is the waiter. The consumer is the chef. The counter is RabbitMQ.
+**RabbitMQ basic services:**
+
+1. Reliable message queues.
+2. Acknowledgment and redelivery on failure.
+3. Exchanges for routing: direct, topic, fanout, headers.
+4. Bindings between exchanges and queues.
+5. Dead-letter queues for failed messages.
+6. Priority queues.
+7. Message TTL and queue TTL.
+8. Durable and transient queue support.
+9. Work distribution across multiple consumers.
+10. Publisher confirms for guaranteed delivery.
+11. Delayed message delivery.
+12. Cluster support for scaling and failover.
+
