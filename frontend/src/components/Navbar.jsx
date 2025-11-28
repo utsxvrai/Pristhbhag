@@ -19,6 +19,8 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center space-x-3">
+          <Link to="/grindtech" className="text-sm px-3 py-2 rounded-md bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 font-semibold">GrindTech</Link>
+          
           {!isLoggedIn && (
             <>
               <Link to="/login" className="text-sm px-3 py-2 rounded-md bg-white border border-slate-200 hover:bg-slate-50">Sign In</Link>

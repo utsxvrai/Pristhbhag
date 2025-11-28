@@ -3,26 +3,29 @@
 I am learning 30 backend tools in 30 days, each day i will be learning new tool.
 
 ## Day 1 :
+
 - Prisma : Prisma is a modern ORM (Object-Relational Mapping) tool for Node.js and TypeScript, helping you interact with databases in an intuitive, type-safe way.
 
-``` npm install prisma --save-dev
+```npm install prisma --save-dev
     npm install @prisma/client
     npx prisma init
 ```
 
 - Set DATABASE_URL in `.env`:
-``` DATABASE_URL="postgresql://user:password@localhost:5432/mydatabase" ```
+  `DATABASE_URL="postgresql://user:password@localhost:5432/mydatabase"`
 
 - Generate Prisma Client:
-``` npx prisma generate ```
+  `npx prisma generate`
 
 - Run migrations to sync database:
-``` npx prisma migrate dev --name init ```
+  `npx prisma migrate dev --name init`
 
 ## Day 2 :
+
 - gRPC (Google Remote Procedure Call) is a high-performance communication protocol that allows services to talk to each other efficiently — often used in microservices architecture.
 
 ### What I Learned :
+
 - How client and server (service) communicate via .proto files.
 
 - How to define RPC methods (like CreateBlog, GetBlogs, etc.) in a .proto file.
@@ -49,25 +52,27 @@ src/
 ```
 
 ## Day 3 :
+
 - Redis (Remote Dictionary Server) is a fast, open-source, in-memory key-value data store used as a database, cache, and message broker. We're using it to cache database requests.
 
 ### What I Learned :
+
 - How to use Redis to dramatically speed up read-heavy operations like GetBlogById and GetBlogs.
 - Implemented the "cache-aside" pattern.
 - How to run Redis locally in a container using Docker:
-``` docker run -d --name my-redis-container -p 6379:6379 redis ```
--Used the ioredis client in Node.js to connect to the Redis server.
+  `docker run -d --name my-redis-container -p 6379:6379 redis`
+  -Used the ioredis client in Node.js to connect to the Redis server.
 
 - Implemented caching at the Repository Layer using the Decorator Pattern. This keeps my Service Layer and Controllers clean, as they are unaware that caching is even happening.
 - Handled cache invalidation:
-    - UpdateBlog & DeleteBlog: Delete the specific blog:id key and the general blogs:all key.
 
-    - CreateBlog: Delete the blogs:all key to ensure the list is refetched.
+  - UpdateBlog & DeleteBlog: Delete the specific blog:id key and the general blogs:all key.
 
-### Resource 
+  - CreateBlog: Delete the blogs:all key to ensure the list is refetched.
+
+### Resource
 
 - Notion Notes - Caching with Redis: https://www.notion.so/Caching-29c3c5598b618012995ece6b2bc7a22d
-
 
 ## Day 4 :
 
@@ -81,9 +86,9 @@ src/
 
 - Learned about:
 
-    - proxy_pass for routing requests to backend services.
+  - proxy_pass for routing requests to backend services.
 
-    - proxy_set_header for forwarding client headers.
+  - proxy_set_header for forwarding client headers.
 
 - Handling WebSocket connections with Upgrade and Connection headers.
 
@@ -93,7 +98,7 @@ src/
 
 ### Example nginx.conf snippet:
 
-``` 
+```
 http {
   upstream backend_cluster {
     server backend1:8000;
@@ -122,7 +127,8 @@ http {
 
 ## Day 5 : More About Databases
 
-### Transactions 
+### Transactions
+
 A transaction in databases is a single logical unit of work that may consist of one or more SQL operations (like INSERT, UPDATE, or DELETE) that are executed together.
 
 ### ACID :
@@ -148,6 +154,7 @@ Here is a list of Normal Forms in SQL:
 - **2NF (Second Normal Form):** Builds on 1NF by We need to remove redundant data from a table that is being applied to multiple rows. and placing them in separate tables. It requires all non-key attributes to be fully functional on the primary key.
 - **3NF (Third Normal Form):** Extends 2NF by ensuring that all non-key attributes are not only fully functional on the primary key but also independent of each other. This eliminates transitive dependency.
 - **BCNF (Boyce-Codd Normal Form):** A refinement of 3NF that addresses anomalies not handled by 3NF. It requires every determinant to be a candidate key, ensuring even stricter adherence to normalization rules.
+
 ## Day 6 : Testing
 
 # **What is Functional Testing?**
@@ -189,18 +196,18 @@ Every test has three key parts:
 Example:
 
 ```jsx
-import http from 'k6/http';
-import { sleep, check } from 'k6';
+import http from "k6/http";
+import { sleep, check } from "k6";
 
 export let options = {
   vus: 100, // virtual users
-  duration: '1m', // test duration
+  duration: "1m", // test duration
 };
 
 export default function () {
-  let res = http.get('http://localhost:3000/api/v1/blogs');
+  let res = http.get("http://localhost:3000/api/v1/blogs");
   check(res, {
-    'status is 200': (r) => r.status === 200,
+    "status is 200": (r) => r.status === 200,
   });
   sleep(1);
 }
@@ -220,6 +227,7 @@ k6 run load-test.js
 - **Throughput:** Total data handled by the backend.
 
 ## Day 7 : RabbitMQ
+
 ### **RabbitMQ analogy: a task counter in a kitchen.**
 
 Orders come in. The waiter writes each order and drops it at the counter. Chefs pick orders one by one. If too many orders arrive, the counter stacks them. If a chef steps away, orders wait. If a chef burns a dish, the order goes back on the counter. When more chefs arrive, the stack is drained faster.
@@ -248,3 +256,44 @@ The producer is the waiter. The consumer is the chef. The counter is RabbitMQ.
 11. Delayed message delivery.
 12. Cluster support for scaling and failover.
 
+## Day 8 : CI / CD
+
+### Overview
+
+CI/CD (Continuous Integration / Continuous Deployment) automates building, testing, and deploying your code. For this project I added a GitHub Actions workflow that builds and pushes Docker images for the `backend` and `frontend` to GitHub Container Registry (GHCR) and deploys to a remote server via SSH and `docker-compose`.
+
+### What I learned
+
+- How to use GitHub Actions to build Docker images and push to a registry.
+- How to trigger a remote deploy via SSH and `docker-compose`.
+- How to manage secrets for CI (PAT, SSH key, remote host variables).
+
+### Workflow summary
+
+- Builds backend image from `./backend/Dockerfile` and pushes `ghcr.io/<owner>/pristhbhag-backend:latest` and `:sha`.
+- Builds frontend image from `./frontend/Dockerfile` and pushes `ghcr.io/<owner>/pristhbhag-frontend:latest` and `:sha`.
+- On pushes to `main` the workflow SSHs into the remote host and runs `docker login ghcr.io`, `docker-compose pull` and `docker-compose up -d`.
+
+### Required repository secrets
+
+Add the following secrets in GitHub (Repository -> Settings -> Secrets -> Actions):
+
+- `GHCR_PAT` — Personal Access Token with `read:packages` and `write:packages`.
+- `DEPLOY_HOST` — remote server hostname or IP.
+- `DEPLOY_USER` — SSH username for the remote server.
+- `DEPLOY_SSH_KEY` — private SSH key text for the `DEPLOY_USER`.
+- `DEPLOY_SSH_PORT` — optional SSH port (defaults to `22`).
+- `REMOTE_COMPOSE_PATH` — path on the remote host where `docker-compose.yml` lives (e.g., `/home/ubuntu/pristhbhag`).
+
+### How to trigger and verify
+
+1. Push a branch and open a PR — the `build-and-push` job will build and push images to GHCR.
+2. Merge to `main` — the `deploy` job will SSH to the remote host and run the deploy steps.
+3. Verify on the remote host:
+
+```powershell
+ssh -i ~/.ssh/id_rsa user@your-host
+cd /path/to/compose
+docker-compose ps
+docker logs backend1 --tail 100
+```
