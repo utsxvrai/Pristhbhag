@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import LevelCard from '../components/LevelCard';
 
@@ -11,46 +11,10 @@ export default function GrindTech() {
   const [isListening, setIsListening] = useState(false);
   const [validationResults, setValidationResults] = useState({});
   const [showValidation, setShowValidation] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  const recognitionRef = useRef(null);
-
-  // Initialize speech recognition
-  useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'en-US';
-
-      recognitionRef.current.onresult = (event) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        if (finalTranscript) {
-          setCurrentAnswer(prev => prev + finalTranscript);
-        }
-      };
-
-      recognitionRef.current.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    }
-  }, []);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   // Sample level data with resources, questions, and expected answers
   const getLevelData = (levelId) => {
@@ -308,8 +272,13 @@ export default function GrindTech() {
     setCurrentAnswer('');
     setValidationResults({});
     setShowValidation(false);
+    setIsProcessing(false);
+    
+    // Clean up media recorder
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
     if (isListening) {
-      recognitionRef.current?.stop();
       setIsListening(false);
     }
   };
@@ -319,18 +288,65 @@ export default function GrindTech() {
     setShowValidation(false);
   };
 
-  const toggleSpeechRecognition = () => {
-    if (!recognitionRef.current) {
-      alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
-      return;
-    }
-
+  const toggleSpeechRecognition = async () => {
     if (isListening) {
-      recognitionRef.current.stop();
+      // Stop recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
       setIsListening(false);
     } else {
-      recognitionRef.current.start();
-      setIsListening(true);
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          setIsProcessing(true);
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          
+          // Send audio to backend
+          try {
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'recording.webm');
+
+            const response = await fetch('http://localhost/api/v1/stt/speech-to-text', {
+              method: 'POST',
+              body: formData,
+            });
+
+            const data = await response.json();
+            
+            if (data.text) {
+              setCurrentAnswer(prev => prev + data.text + ' ');
+            } else {
+              console.error('No text in response:', data);
+              alert('Failed to transcribe audio. Please try again.');
+            }
+          } catch (error) {
+            console.error('Error sending audio to backend:', error);
+            alert('Error transcribing audio. Please check your connection.');
+          } finally {
+            setIsProcessing(false);
+            // Stop all tracks to release microphone
+            stream.getTracks().forEach(track => track.stop());
+          }
+        };
+
+        mediaRecorder.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+        alert('Unable to access microphone. Please grant permission and try again.');
+      }
     }
   };
 
@@ -583,16 +599,24 @@ export default function GrindTech() {
             {/* Microphone Button */}
             <button
               onClick={toggleSpeechRecognition}
+              disabled={isProcessing}
               className={`absolute right-4 top-4 p-3 rounded-full transition-all ${
                 isListening 
                   ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                  : isProcessing
+                  ? 'bg-gray-600 cursor-not-allowed'
                   : 'bg-purple-600 hover:bg-purple-700'
               }`}
-              title={isListening ? 'Stop recording' : 'Start speech-to-text'}
+              title={isListening ? 'Stop recording' : isProcessing ? 'Processing...' : 'Start speech-to-text'}
             >
               {isListening ? (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <rect x="6" y="6" width="8" height="8" rx="1" />
+                </svg>
+              ) : isProcessing ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -604,7 +628,9 @@ export default function GrindTech() {
           
           <div className="flex justify-between items-center mt-2">
             <p className="text-sm text-gray-500">
-              {currentAnswer.length} characters {isListening && '• 🎤 Listening...'}
+              {currentAnswer.length} characters 
+              {isListening && ' • 🎤 Recording...'}
+              {isProcessing && ' • ⏳ Transcribing...'}
             </p>
             <button
               onClick={validateAnswer}

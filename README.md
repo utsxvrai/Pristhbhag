@@ -297,3 +297,48 @@ cd /path/to/compose
 docker-compose ps
 docker logs backend1 --tail 100
 ```
+
+
+## Day 9 : Speech to Text with ElevenLabs
+
+Integrated **ElevenLabs API** to convert speech to text. This feature allows users to upload an audio file, which is then transcribed using the `scribe_v1` model.
+
+### What I Learned :
+
+- **ElevenLabs SDK**: How to use the `@elevenlabs/elevenlabs-js` client to interact with the API.
+- **File Handling**: Used `multer` to handle `multipart/form-data` file uploads in Express.
+- **Audio Processing**: Reading a file from the disk, creating a Blob, and sending it to an external AI service.
+- **Cleanup**: Implementing `deleteFile` utility to remove temporary uploads after processing to keep the server clean.
+
+### Implementation Flow :
+
+1.  **Route**: `POST /api/v1/stt/speech-to-text`
+2.  **Middleware**: `multer` saves the uploaded file to a temporary `uploads/` directory.
+3.  **Controller**: extracted `req.file.path` and passed it to the service.
+4.  **Service**:
+    - Reads the file into a buffer.
+    - Converts it to a Blob with type `audio/mp3`.
+    - Calls `elevenlabs.speechToText.convert()` with `modelId: "scribe_v1"`.
+5.  **Response**: Returns the transcribed text JSON.
+
+### Code Snippet (Service) :
+
+```javascript
+const { ElevenLabsClient } = require("@elevenlabs/elevenlabs-js");
+const elevenlabs = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY });
+
+async function transcribeAudio(filePath) {
+  const audioBuffer = fs.readFileSync(filePath);
+  const audioBlob = new Blob([audioBuffer], { type: "audio/mp3" });
+
+  const transcription = await elevenlabs.speechToText.convert({
+    file: audioBlob,
+    modelId: "scribe_v1",
+    tagAudioEvents: false,
+    languageCode: "en",
+    diarize: false
+  });
+
+  return transcription.text;
+}
+```
