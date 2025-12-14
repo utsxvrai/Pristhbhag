@@ -342,3 +342,56 @@ async function transcribeAudio(filePath) {
   return transcription.text;
 }
 ```
+
+## Day 10 : AI Evaluation with Google Gemini
+
+Integrated **Google Gemini API** (using `@google/genai` SDK) to build an intelligent answer evaluation system. The backend acts as a "Senior Backend Engineer" interviewer, analyzing user answers for technical accuracy, confidence, and completeness.
+
+### What I Learned :
+
+- **Prompt Engineering**: Crafted a specific persona and strict rules (e.g., "Penalize confidently wrong statements") to get high-quality feedback.
+- **Latency Optimization**:
+    - **Token Reduction**: Aggressively shortened prompts to speed up inference.
+    - **Timeout Guards**: Implemented a 6-second `Promise.race` timeout to prevent hanging requests.
+    - **Model Warmup**: Added a dummy call on server start to initialize the model connection early.
+- **Robust JSON Parsing**: LLMs often wrap JSON in markdown (```json ... ```). Implemented regex-based extraction to reliably parse the output.
+- **SDK Management**: Navigated the difference between the older `@google/generative-ai` and the newer `@google/genai` SDK (v1 beta).
+
+### Implementation Flow :
+
+1.  **Route**: `POST /api/v1/evaluation/evaluate` matches the question and user answer.
+2.  **Service**:
+    - Constructs a concise prompt injecting the `question` and `answer`.
+    - Calls `gemini-2.5-flash` with `responseMimeType: 'application/json'`.
+    - Parses the response into `{ isCorrect, score, feedback, idealShortAnswer }`.
+    - Handles timeouts and errors gracefully.
+3.  **Frontend**:
+    - Sends the answer to the backend.
+    - Displays rich feedback: ✅/❌ status, score, missing concepts (yellow alert), and corrections (red alert).
+
+### Code Snippet (Evaluation Service) :
+
+```javascript
+const { GoogleGenAI } = require("@google/genai");
+const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+async function evaluateAnswer(question, answer) {
+  const prompt = `...Evaluate strictly... Return ONLY JSON...`;
+  
+  // Fail-fast timeout pattern
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    const response = await client.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: { responseMimeType: 'application/json' },
+      signal: controller.signal,
+    });
+    // ... parse and return JSON
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+```

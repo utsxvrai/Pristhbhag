@@ -350,7 +350,7 @@ export default function GrindTech() {
     }
   };
 
-  const validateAnswer = () => {
+  const validateAnswer = async () => {
     if (!selectedLevel) return;
     
     const levelData = getLevelData(selectedLevel.id);
@@ -358,41 +358,39 @@ export default function GrindTech() {
     const currentQuestion = levelData.questions[questionIndex];
     
     if (!currentQuestion) return;
-    
-    const answer = currentAnswer.toLowerCase().trim();
-    const keywords = currentQuestion.keywords || [];
-    
-    // Count how many keywords are present
-    const matchedKeywords = keywords.filter(keyword => 
-      answer.includes(keyword.toLowerCase())
-    );
-    
-    const keywordScore = keywords.length > 0 
-      ? (matchedKeywords.length / keywords.length) * 100 
-      : 0;
-    
-    // Check minimum length
-    const hasMinimumLength = answer.length >= 20;
-    
-    // Determine if answer is acceptable
-    const isCorrect = keywordScore >= 40 && hasMinimumLength;
-    
-    setValidationResults(prev => ({
-      ...prev,
-      [questionIndex]: {
-        isCorrect,
-        score: Math.round(keywordScore),
-        matchedKeywords,
-        totalKeywords: keywords.length,
-        feedback: isCorrect 
-          ? '✅ Great answer! You covered the key concepts.' 
-          : '❌ Your answer needs more detail. Check the hints below.',
-        hints: currentQuestion.hints,
-        expectedAnswer: currentQuestion.expectedAnswer
+
+    setIsProcessing(true);
+    setValidationResults(prev => ({ ...prev, [questionIndex]: null })); // Clear previous result
+
+    try {
+      const response = await fetch('http://localhost/api/v1/evaluation/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: currentQuestion.question,
+          answer: currentAnswer
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Evaluation failed');
       }
-    }));
-    
-    setShowValidation(true);
+
+      const result = await response.json();
+
+      setValidationResults(prev => ({
+        ...prev,
+        [questionIndex]: result
+      }));
+      
+      setShowValidation(true);
+
+    } catch (error) {
+      console.error("Evaluation error:", error);
+      alert("Failed to evaluate answer. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleNextQuestion = () => {
@@ -652,38 +650,43 @@ export default function GrindTech() {
                 <span className="text-2xl">{currentValidation.isCorrect ? '✅' : '❌'}</span>
                 <div className="flex-1">
                   <p className={`font-bold mb-1 ${currentValidation.isCorrect ? 'text-green-300' : 'text-red-300'}`}>
-                    {currentValidation.feedback}
+                    Score: {currentValidation.score}/10
                   </p>
-                  <p className="text-sm text-gray-400">
-                    Keyword Match Score: {currentValidation.score}% ({currentValidation.matchedKeywords.length}/{currentValidation.totalKeywords} keywords found)
+                  <p className="text-sm text-white/90 mb-2">
+                    {currentValidation.feedback}
                   </p>
                 </div>
               </div>
 
-              {!currentValidation.isCorrect && (
-                <>
-                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-3">
-                    <p className="text-yellow-200 font-semibold text-sm mb-1">💡 Hint:</p>
-                    <p className="text-yellow-300/80 text-sm">{currentValidation.hints}</p>
-                  </div>
-
-                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                    <p className="text-blue-200 font-semibold text-sm mb-1">📖 Expected Answer:</p>
-                    <p className="text-blue-300/80 text-sm">{currentValidation.expectedAnswer}</p>
-                  </div>
-                </>
-              )}
-
-              {currentValidation.isCorrect && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <p className="text-xs text-gray-400 w-full mb-1">Matched keywords:</p>
-                  {currentValidation.matchedKeywords.map((keyword, idx) => (
-                    <span key={idx} className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded">
-                      {keyword}
-                    </span>
-                  ))}
+               {/* Missing Concepts */}
+               {currentValidation.missingConcepts && currentValidation.missingConcepts.length > 0 && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-3">
+                  <p className="text-yellow-200 font-semibold text-sm mb-1">⚠️ Missing Concepts:</p>
+                  <ul className="list-disc list-inside text-yellow-300/80 text-sm">
+                    {currentValidation.missingConcepts.map((concept, idx) => (
+                      <li key={idx}>{concept}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
+
+              {/* Incorrect Statements */}
+              {currentValidation.incorrectStatements && currentValidation.incorrectStatements.length > 0 && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3">
+                  <p className="text-red-200 font-semibold text-sm mb-1">❌ Corrections:</p>
+                   <ul className="list-disc list-inside text-red-300/80 text-sm">
+                    {currentValidation.incorrectStatements.map((stmt, idx) => (
+                      <li key={idx}>{stmt}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Ideal Answer */}
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <p className="text-blue-200 font-semibold text-sm mb-1">📖 Ideal Answer:</p>
+                <p className="text-blue-300/80 text-sm">{currentValidation.idealShortAnswer}</p>
+              </div>
             </div>
           )}
         </div>

@@ -5,6 +5,7 @@ const cors = require('cors');
 const {GrpcService} = require('./services');
 require('dotenv').config();
 const { connectRedis } = require('./utils/redisClient');
+const { evaluateAnswer } = require('./services/evaluation-service');
 
 // Create an Express application
 const app = express();
@@ -24,6 +25,11 @@ pool.connect()
 // Start the server
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
+  
+  // Warm up the LLM model
+  evaluateAnswer("warmup", "warmup")
+    .then(() => console.log('LLM Warmup successful'))
+    .catch(() => console.log('LLM Warmup failed (expected for non-technical input)'));
 });
 
 // Start the gRPC server
